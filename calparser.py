@@ -3,9 +3,9 @@
 from datetime import datetime, timezone, timedelta
 
 file_in = open('targetcal.ics', mode='r', encoding='utf8')
-file_out = open('parseddataset.csv', mode='w', encoding='utf8')
+file_out = open('seperate.csv', mode='w', encoding='utf8')
 
-columnname = '"日期","上班","下班"' + '\n'
+columnname = '"日期","上班","全部下班","週一到週四下班","週五下班"' + '\n'
 file_out.write(columnname)
 
 caldict = {}
@@ -41,18 +41,26 @@ for key, value in sorted(caldict.items()):
 
     if value[2] < value[0]:
         value[2] += timedelta(days=1)
-        value[2] = value[2].strftime('%H%M')
-        value[2] = int(value[2]) + 2400
+        clockout = value[2].strftime('%H%M')
+        clockout = int(clockout) + 2400
     else:
-        value[2] = value[2].strftime('%H%M')
+        clockout = value[2].strftime('%H%M')
+
+    if value[2].isoweekday() in range(1,5):
+        monthu = clockout
+        fri = ''
+
+    if value[2].isoweekday() == 5:
+        monthu = ''
+        fri = clockout
 
     # value[0] = value[0].strftime('%Y/%m/%d %H:%M')
     # value[2] = value[2].strftime('%Y/%m/%d %H:%M')
-    value[0] = value[0].strftime('%H%M')
+    clockin = value[0].strftime('%H%M')
     # value[2] = value[2].strftime('%H%M')
 
     # line = key + ' ' + ', '.join(value) + '\n'
-    line = '"' + key + '","' + value[0] + '","' + str(value[2]) + '"\n'
+    line = '"' + key + '","' + clockin + '","' + str(clockout) + '","' + str(monthu) + '","' + str(fri) + '"\n'
     file_out.write(line)
 
 file_in.close()
